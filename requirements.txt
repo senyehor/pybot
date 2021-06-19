@@ -32,6 +32,7 @@ rsa==4.7.2
 six==1.16.0
 tornado==6.1
 tzlocal==2.1
+unicorn==1.0.3
 uritemplate==3.0.1
 urllib3==1.26.5
 Werkzeug==2.0.1
