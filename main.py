@@ -8,6 +8,7 @@ from google.oauth2.credentials import Credentials
 import httplib2
 import googleapiclient.discovery as discovery
 from oauth2client.service_account import ServiceAccountCredentials
+from bot import run_bot
 
 APIS_PATHS = [
     'https://www.googleapis.com/auth/spreadsheets',
@@ -20,7 +21,7 @@ service = discovery.build('sheets', 'v4', http=http_auth)
 
 
 def main():
-    pass
+    run_bot()
 
 
 if __name__ == '__main__':
