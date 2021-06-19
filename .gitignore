@@ -1,6 +1,6 @@
 venv/
 __pycache__/
-
+a.bat
 # Default ignored files
 /shelf/
 /workspace.xml
