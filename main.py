@@ -19,9 +19,5 @@ APIS_PATHS = [
 # service = discovery.build('sheets', 'v4', http=http_auth)
 
 
-def main():
-    run_bot()
-
-
 if __name__ == '__main__':
-    main()
+    run_bot()

@@ -29,7 +29,6 @@ def hooks_getter():
         BOT.sendMessage(chat_id=chat_id, text=welcome_msg, reply_to_message_id=message_id)
 
 
-@app.route(f'/{BOT_TOKEN}/setwebhook', methods=['GET', 'POST'])
 def set_webhook():
     _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
     if _:
@@ -45,5 +44,4 @@ def index():
 def run_bot():
     app.run(threated=True)
     global bot_response_for_debug
-    bot_response_for_debug = requests.get(f'{BOT_URL_PATH}{BOT_TOKEN}/setwebhook') # set bot to send webhooks
-    # TODO: Change from json to eatable
+    bot_response_for_debug = set_webhook()
