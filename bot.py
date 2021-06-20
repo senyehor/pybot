@@ -1,8 +1,9 @@
+import os
+
 from flask import Flask, request
 import telegram
-from credentials_setup import get_value_from_dotenv
-
-BOT_TOKEN = '1776769813:AAEYgx5m_zJ5KYRGHPtk1tg872qDrjA-EWQ'#get_value_from_dotenv('bot_token')
+from boto.s3.connection import S3Connection
+BOT_TOKEN = os.getenv('bot_token')
 BOT_USERNAME ='mytttetttst_bot' #get_value_from_dotenv('bot_username')
 URL_BOT_PATH = 'https://blooming-journey-73436.herokuapp.com/'#get_value_from_dotenv('url_bot_path')
 BOT = telegram.Bot(BOT_TOKEN)
@@ -33,7 +34,7 @@ def set_webhook():
 
 @app.route('/')
 def index():
-    return '.'
+    return BOT_TOKEN
 
 
 def run_bot():
