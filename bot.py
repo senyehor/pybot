@@ -13,7 +13,8 @@ app = Flask(__name__)
 
 
 @app.route(f'/{BOT_TOKEN}', methods=['POST'])
-def respond():
+def hooks_getter():
+    """Bot sends hooks every time he gets a message"""
     update = telegram.Update.de_json(request.get_json(force=True), BOT)
     text = update.message.text.encode('utf-8').decode()
     chat_id = update.message.chat_id
@@ -35,8 +36,9 @@ def set_webhook():
 
 @app.route('/')
 def index():
-    return BOT_TOKEN
+    return 'al least launched'
 
 
 def run_bot():
     app.run(threated=True)
+    set_webhook()
