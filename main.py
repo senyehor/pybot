@@ -1,5 +1,4 @@
 from __future__ import print_function
-from credentials_setup import get_credentials_dict
 import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -14,10 +13,10 @@ APIS_PATHS = [
     'https://www.googleapis.com/auth/spreadsheets',
     'https://www.googleapis.com/auth/drive',
 ]
-
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(get_credentials_dict(), APIS_PATHS)
-http_auth = credentials.authorize(httplib2.Http())
-service = discovery.build('sheets', 'v4', http=http_auth)
+# TODO: add creds
+# credentials = ServiceAccountCredentials.from_json_keyfile_dict(get_credentials_dict(), APIS_PATHS)
+# http_auth = credentials.authorize(httplib2.Http())
+# service = discovery.build('sheets', 'v4', http=http_auth)
 
 
 def main():

@@ -2,10 +2,11 @@ import os
 
 from flask import Flask, request
 import telegram
-from boto.s3.connection import S3Connection
+from boto.s3.connection import S3Connection  # for accessing app`s config vars
+
 BOT_TOKEN = os.getenv('bot_token')
-BOT_USERNAME ='mytttetttst_bot' #get_value_from_dotenv('bot_username')
-URL_BOT_PATH = 'https://blooming-journey-73436.herokuapp.com/'#get_value_from_dotenv('url_bot_path')
+BOT_USERNAME = os.getenv('bot_username')
+BOT_URL_PATH = os.getenv('bot_url_path')
 BOT = telegram.Bot(BOT_TOKEN)
 
 app = Flask(__name__)
@@ -26,7 +27,7 @@ def respond():
 
 @app.route('/setwebhook', methods=['GET', 'POST'])
 def set_webhook():
-    _ = BOT.set_webhook(f'{URL_BOT_PATH}{BOT_TOKEN}')
+    _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
     if _:
         return 'webhook setup ok'
     return 'webhook setup failed'
