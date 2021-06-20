@@ -12,6 +12,7 @@ BOT_URL_PATH = os.getenv('bot_url_path')
 BOT = telegram.Bot(BOT_TOKEN)
 
 app = Flask(__name__)
+bot_response_for_debug = None
 
 
 @app.route(f'/{BOT_TOKEN}', methods=['POST'])
@@ -28,7 +29,7 @@ def hooks_getter():
         BOT.sendMessage(chat_id=chat_id, text=welcome_msg, reply_to_message_id=message_id)
 
 
-@app.route(f'{BOT_TOKEN}/setwebhook', methods=['GET', 'POST'])
+@app.route(f'/{BOT_TOKEN}/setwebhook', methods=['GET', 'POST'])
 def set_webhook():
     _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
     if _:
@@ -38,9 +39,11 @@ def set_webhook():
 
 @app.route('/')
 def index():
-    return 'al least launched'
+    return bot_response_for_debug
 
 
 def run_bot():
     app.run(threated=True)
-    requests.get(f'{BOT_URL_PATH}{BOT_TOKEN}/setwebhook') # set bot to send webhooks
+    global bot_response_for_debug
+    bot_response_for_debug = requests.get(f'{BOT_URL_PATH}{BOT_TOKEN}/setwebhook') # set bot to send webhooks
+    # TODO: Change from json to eatable
