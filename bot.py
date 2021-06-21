@@ -9,20 +9,24 @@ BOT_USERNAME = os.getenv('bot_username')
 BOT_URL_PATH = os.getenv('bot_url_path')
 BOT = telegram.Bot(BOT_TOKEN)
 bot_response_for_debug = 'not set up'
+
 app = Flask(__name__)
 
 
+@app.before_first_request
 def run_bot():
     global bot_response_for_debug
     _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
     if _:
         bot_response_for_debug = 'webhook setup ok'
     bot_response_for_debug = 'webhook setup failed'
-    app.run()
+
+def get_name():
+    print(__name__)
 
 
-if __name__ == '__bot__':
-    run_bot()
+# if __name__ == 'bot':
+# run_bot()
 
 
 @app.route(f'/{BOT_TOKEN}', methods=['POST'])
@@ -41,4 +45,4 @@ def hooks_getter():
 
 @app.route('/')
 def index():
-    return __name__
+    return bot_response_for_debug
