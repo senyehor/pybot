@@ -12,7 +12,7 @@ BOT_URL_PATH = os.getenv('bot_url_path')
 BOT = telegram.Bot(BOT_TOKEN)
 
 app = Flask(__name__)
-bot_response_for_debug = None
+bot_response_for_debug = 'debug response was not set up'
 
 
 @app.route(f'/{BOT_TOKEN}', methods=['POST'])
