@@ -1,9 +1,13 @@
+import errno
 import os
 import requests
 from flask import Flask, request
 import telegram
 from boto.s3.connection import S3Connection  # for accessing app`s config vars locally
+from telegram.ext import Updater
+from pprint import pp
 
+PORT = int(os.getenv('PORT'))
 BOT_TOKEN = os.getenv('bot_token')
 BOT_USERNAME = os.getenv('bot_username')
 BOT_URL_PATH = os.getenv('bot_url_path')
@@ -12,14 +16,19 @@ index_debug_msg = 'not set up'
 
 app = Flask(__name__)
 
-#func to set up webhook
-# @app.before_first_request
-# def run_bot():
-#     global bot_response_for_debug
-#     _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
-#     if _:
-#         bot_response_for_debug = 'webhook setup ok'
-#     bot_response_for_debug = 'webhook setup failed'
+
+# TODO: deal
+# func to set up webhook
+@app.before_first_request
+def run_bot():
+    global bot_response_for_debug
+    updater = Updater(BOT_TOKEN)
+    pp(dict_to_str(BOT.get_webhook_info().to_dict()))
+    # updater.start_webhook(listen='0.0.0.0',
+    #                       port=PORT,
+    #                       url_path=BOT_TOKEN,
+    #                       webhook_url=BOT_URL_PATH + BOT_TOKEN)
+    # updater.idle()
 
 
 def get_name():
@@ -30,9 +39,9 @@ def get_name():
 # run_bot()
 
 
-@app.route(f'/{BOT_TOKEN}', methods=['POST'])
+@app.route(f'/{BOT_TOKEN}', methods=['POST', 'GET'])
 def hooks_getter():
-    """Bot sends hooks every time he gets a message"""
+    """Bot sends hooks every time he gets a message and this func processes them"""
     update = telegram.Update.de_json(request.get_json(force=True), BOT)
     text = update.message.text.encode('utf-8').decode()
     print(text)
@@ -47,10 +56,6 @@ def hooks_getter():
 
 @app.route('/')
 def index():
-    _ = BOT.delete_webhook()
-    if _:
-        return  '+'
-    return '-'
     return index_debug_msg
 
 
