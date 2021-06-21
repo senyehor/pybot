@@ -12,7 +12,7 @@ bot_response_for_debug = 'not set up'
 
 app = Flask(__name__)
 
-
+#func to set up webhook
 # @app.before_first_request
 # def run_bot():
 #     global bot_response_for_debug
@@ -46,6 +46,7 @@ def hooks_getter():
 
 @app.route('/')
 def index():
+    print('degugg')
     return dict_to_str(BOT.get_webhook_info().to_dict())
 
 
