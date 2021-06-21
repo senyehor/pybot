@@ -29,13 +29,6 @@ def hooks_getter():
         BOT.sendMessage(chat_id=chat_id, text=welcome_msg, reply_to_message_id=message_id)
 
 
-def set_webhook():
-    _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
-    if _:
-        return 'webhook setup ok'
-    return 'webhook setup failed'
-
-
 @app.route('/')
 def index():
     return bot_response_for_debug
@@ -44,4 +37,7 @@ def index():
 def run_bot():
     app.run(threated=True)
     global bot_response_for_debug
-    bot_response_for_debug = set_webhook()
+    _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
+    if _:
+        bot_response_for_debug = 'webhook setup ok'
+    bot_response_for_debug = 'webhook setup failed'
