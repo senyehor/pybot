@@ -8,9 +8,8 @@ BOT_TOKEN = os.getenv('bot_token')
 BOT_USERNAME = os.getenv('bot_username')
 BOT_URL_PATH = os.getenv('bot_url_path')
 BOT = telegram.Bot(BOT_TOKEN)
-
+bot_response_for_debug = 'not set up'
 app = Flask(__name__)
-bot_response_for_debug = 'debug response was not set up'
 
 
 def run_bot():
@@ -42,4 +41,4 @@ def hooks_getter():
 
 @app.route('/')
 def index():
-    return bot_response_for_debug
+    return __name__
