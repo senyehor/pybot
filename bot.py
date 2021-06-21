@@ -13,13 +13,13 @@ bot_response_for_debug = 'not set up'
 app = Flask(__name__)
 
 
-@app.before_first_request
-def run_bot():
-    global bot_response_for_debug
-    _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
-    if _:
-        bot_response_for_debug = 'webhook setup ok'
-    bot_response_for_debug = 'webhook setup failed'
+# @app.before_first_request
+# def run_bot():
+#     global bot_response_for_debug
+#     _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
+#     if _:
+#         bot_response_for_debug = 'webhook setup ok'
+#     bot_response_for_debug = 'webhook setup failed'
 
 
 def get_name():
@@ -46,4 +46,11 @@ def hooks_getter():
 
 @app.route('/')
 def index():
-    return bot_response_for_debug
+    return dict_to_str(BOT.get_webhook_info().to_dict())
+
+
+def dict_to_str(dict: dict):
+    res = ''
+    for key, value in dict.items():
+        res += f'key : "{key}" || value : "{value}"\n'
+    return res
