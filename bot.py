@@ -47,6 +47,10 @@ def hooks_getter():
 
 @app.route('/')
 def index():
+    _ = BOT.delete_webhook()
+    if _:
+        return  '+'
+    return '-'
     return index_debug_msg
 
 
