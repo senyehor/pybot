@@ -1,6 +1,4 @@
 import os
-from multiprocessing import get_all_start_methods
-
 import requests
 from flask import Flask, request
 import telegram
@@ -13,6 +11,19 @@ BOT = telegram.Bot(BOT_TOKEN)
 
 app = Flask(__name__)
 bot_response_for_debug = 'debug response was not set up'
+
+
+def run_bot():
+    global bot_response_for_debug
+    _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
+    if _:
+        bot_response_for_debug = 'webhook setup ok'
+    bot_response_for_debug = 'webhook setup failed'
+    app.run()
+
+
+if __name__ == '__bot__':
+    run_bot()
 
 
 @app.route(f'/{BOT_TOKEN}', methods=['POST'])
@@ -32,12 +43,3 @@ def hooks_getter():
 @app.route('/')
 def index():
     return bot_response_for_debug
-
-
-def run_bot():
-    global bot_response_for_debug
-    _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
-    if _:
-        bot_response_for_debug = 'webhook setup ok'
-    bot_response_for_debug = 'webhook setup failed'
-    app.run(threated=True)

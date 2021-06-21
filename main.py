@@ -17,7 +17,3 @@ APIS_PATHS = [
 # credentials = ServiceAccountCredentials.from_json_keyfile_dict(get_credentials_dict(), APIS_PATHS)
 # http_auth = credentials.authorize(httplib2.Http())
 # service = discovery.build('sheets', 'v4', http=http_auth)
-
-
-if __name__ == '__main__':
-    run_bot()
