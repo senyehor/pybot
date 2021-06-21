@@ -35,9 +35,9 @@ def index():
 
 
 def run_bot():
-    app.run(threated=True)
     global bot_response_for_debug
     _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
     if _:
         bot_response_for_debug = 'webhook setup ok'
     bot_response_for_debug = 'webhook setup failed'
+    app.run(threated=True)
