@@ -15,7 +15,6 @@ app = Flask(__name__)
 
 @app.before_first_request
 def run_bot():
-    app.run(debug=True)
     global bot_response_for_debug
     _ = BOT.set_webhook(f'{BOT_URL_PATH}{BOT_TOKEN}')
     if _:
