@@ -1,4 +1,4 @@
-import errno
+import logging
 import os
 import requests
 from flask import Flask, request
@@ -7,6 +7,11 @@ from boto.s3.connection import S3Connection  # for accessing app`s config vars l
 from telegram.ext import Updater
 from pprint import pp
 
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG
+)
+logger = logging.getLogger(__name__)
+SET_WEBHOOK = False
 PORT = int(os.getenv('PORT'))
 BOT_TOKEN = os.getenv('bot_token')
 BOT_USERNAME = os.getenv('bot_username')
@@ -23,12 +28,13 @@ app = Flask(__name__)
 def run_bot():
     global bot_response_for_debug
     print(PORT)
-    # updater = Updater(BOT_TOKEN)
-    # updater.start_webhook(listen='0.0.0.0',
-    #                       port=PORT,
-    #                       url_path=BOT_TOKEN,
-    #                       webhook_url=BOT_URL_PATH + BOT_TOKEN)
-    # updater.idle()
+    if SET_WEBHOOK:
+        updater = Updater(BOT_TOKEN)
+        updater.start_webhook(listen='0.0.0.0',
+                              port=PORT,
+                              url_path=BOT_TOKEN,
+                              webhook_url=BOT_URL_PATH + BOT_TOKEN)
+        updater.idle()
 
 
 def get_name():
