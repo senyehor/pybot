@@ -25,7 +25,6 @@ BOT_URL_PATH = os.getenv('bot_url_path')
 BOT = telegram.Bot(BOT_TOKEN)
 UPDATER = Updater(BOT_TOKEN)
 DISPATCHER: Dispatcher = UPDATER.dispatcher
-
 index_debug_msg = 'not set up'
 
 
@@ -33,12 +32,13 @@ def pog(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('pog')
 
 
+DISPATCHER.add_handler(CommandHandler('pog', pog))
+
+
 # TODO: deal
 # func to set up webhook
 @app.before_first_request
 def run_bot():
-    global DISPATCHER
-    DISPATCHER.add_handler(CommandHandler('pog', pog))
     if SET_WEBHOOK:
         UPDATER.start_webhook(listen='0.0.0.0',
                               port=PORT,
@@ -63,6 +63,8 @@ def hooks_getter():
 
 @app.route('/')
 def index():
+    for i in DISPATCHER.handlers:
+        print(f'dispatcher {i}')
     return 'ok'
 
 
