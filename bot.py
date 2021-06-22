@@ -1,6 +1,9 @@
 import logging
 import os
+
+import flask
 import requests
+from http.client import HTTPResponse
 from flask import Flask, request
 import telegram
 from boto.s3.connection import S3Connection  # for accessing app`s config vars locally
@@ -54,6 +57,7 @@ def hooks_getter():
     chat_id = update.message.chat_id
     message_id = update.message.message_id
     BOT.sendMessage(chat_id=chat_id, text=text, reply_to_message_id=message_id)
+    return flask.Response(status=200)
 
 
 @app.route('/')
