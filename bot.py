@@ -53,12 +53,7 @@ def hooks_getter():
     text = update.message.text.encode('utf-8').decode()
     chat_id = update.message.chat_id
     message_id = update.message.message_id
-    if text == '/start':
-        welcome_msg = """
-        This bot is developed for tracking studying consistency and helps manage studying process 
-        """
-        BOT.sendMessage(chat_id=chat_id, text=welcome_msg, reply_to_message_id=message_id)
-    return '/token works'
+    BOT.sendMessage(chat_id=chat_id, text=text, reply_to_message_id=message_id)
 
 
 @app.route('/')
