@@ -26,15 +26,16 @@ app = Flask(__name__)
 # func to set up webhook
 @app.before_first_request
 def run_bot():
+    print('entered tunbot')
     global bot_response_for_debug
+    updater = Updater(BOT_TOKEN)
     print(PORT)
     if SET_WEBHOOK:
-        updater = Updater(BOT_TOKEN)
         updater.start_webhook(listen='0.0.0.0',
                               port=PORT,
                               url_path=BOT_TOKEN,
                               webhook_url=BOT_URL_PATH + BOT_TOKEN)
-        updater.idle()
+    print('exited runbot')
 
 
 def get_name():
@@ -57,14 +58,18 @@ def hooks_getter():
         This bot is developed for tracking studying consistency and helps manage studying process 
         """
         BOT.sendMessage(chat_id=chat_id, text=welcome_msg, reply_to_message_id=message_id)
+    return '/token works'
 
 
 @app.route('/')
 def index():
-    return index_debug_msg
+    return 'ok'
 
 
 def dict_to_str(dict: dict):
+    pp(dict)
+    if dict == None:
+        return 'Noneg'
     res = ''
     for key, value in dict.items():
         res += f'key : "{key}" || value : "{value}"\n'
