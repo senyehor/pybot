@@ -1,31 +1,35 @@
 import logging
 import os
-
 import flask
 import requests
-from http.client import HTTPResponse
 from flask import Flask, request
 import telegram
 from boto.s3.connection import S3Connection  # for accessing app`s config vars locally
-from telegram.ext import Updater, CommandHandler
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, Dispatcher, CallbackContext
 from pprint import pp
 
+app = Flask(__name__)
+
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG  # noqa
 )
 logger = logging.getLogger(__name__)
+
 SET_WEBHOOK = False
+
 PORT = int(os.getenv('PORT'))
 BOT_TOKEN = os.getenv('bot_token')
 BOT_USERNAME = os.getenv('bot_username')
 BOT_URL_PATH = os.getenv('bot_url_path')
 BOT = telegram.Bot(BOT_TOKEN)
+UPDATER = Updater(BOT_TOKEN)
+DISPATCHER: Dispatcher = UPDATER.dispatcher
+
 index_debug_msg = 'not set up'
 
-app = Flask(__name__)
 
-
-def pog(update, context) -> None:
+def pog(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('pog')
 
 
@@ -33,11 +37,10 @@ def pog(update, context) -> None:
 # func to set up webhook
 @app.before_first_request
 def run_bot():
-    updater = Updater(BOT_TOKEN)
-    dispatcher = updater.dispatcher
-    updater.dispatcher.add_handler(CommandHandler('pog', pog))
+    global DISPATCHER
+    DISPATCHER.add_handler(CommandHandler('pog', pog))
     if SET_WEBHOOK:
-        updater.start_webhook(listen='0.0.0.0',
+        UPDATER.start_webhook(listen='0.0.0.0',
                               port=PORT,
                               url_path=BOT_TOKEN,
                               webhook_url=BOT_URL_PATH + BOT_TOKEN)
