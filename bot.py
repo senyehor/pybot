@@ -7,7 +7,7 @@ from http.client import HTTPResponse
 from flask import Flask, request
 import telegram
 from boto.s3.connection import S3Connection  # for accessing app`s config vars locally
-from telegram.ext import Updater
+from telegram.ext import Updater, CommandHandler
 from pprint import pp
 
 logging.basicConfig(
@@ -25,24 +25,22 @@ index_debug_msg = 'not set up'
 app = Flask(__name__)
 
 
+def pog(update, context) -> None:
+    update.message.reply_text('pog')
+
+
 # TODO: deal
 # func to set up webhook
 @app.before_first_request
 def run_bot():
-    print('entered tunbot')
-    global bot_response_for_debug
     updater = Updater(BOT_TOKEN)
-    print(PORT)
+    dispatcher = updater.dispatcher
+    updater.dispatcher.add_handler(CommandHandler('pog', pog))
     if SET_WEBHOOK:
         updater.start_webhook(listen='0.0.0.0',
                               port=PORT,
                               url_path=BOT_TOKEN,
                               webhook_url=BOT_URL_PATH + BOT_TOKEN)
-    print('exited runbot')
-
-
-def get_name():
-    print(__name__)
 
 
 # if __name__ == 'bot':
