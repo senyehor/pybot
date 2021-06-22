@@ -22,8 +22,8 @@ app = Flask(__name__)
 @app.before_first_request
 def run_bot():
     global bot_response_for_debug
-    updater = Updater(BOT_TOKEN)
-    pp(dict_to_str(BOT.get_webhook_info().to_dict()))
+    print(PORT)
+    # updater = Updater(BOT_TOKEN)
     # updater.start_webhook(listen='0.0.0.0',
     #                       port=PORT,
     #                       url_path=BOT_TOKEN,
@@ -44,7 +44,6 @@ def hooks_getter():
     """Bot sends hooks every time he gets a message and this func processes them"""
     update = telegram.Update.de_json(request.get_json(force=True), BOT)
     text = update.message.text.encode('utf-8').decode()
-    print(text)
     chat_id = update.message.chat_id
     message_id = update.message.message_id
     if text == '/start':
