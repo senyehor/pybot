@@ -38,8 +38,10 @@ def run_bot():
 @app.route(f'/{BOT_TOKEN}', methods=['POST', 'GET'])
 def hooks_getter():
     """Bot sends hooks every time he gets a message and this func processes them"""
-    pp(DISPATCHER.handlers)
     update = telegram.Update.de_json(request.get_json(force=True), BOT)
+    if request.method == 'POST':
+        DISPATCHER.process_update(update)
+        return flask.Response(status=200)
     text = update.message.text.encode('utf-8').decode()
     chat_id = update.message.chat_id
     message_id = update.message.message_id
