@@ -20,11 +20,11 @@ BOT_USERNAME = os.getenv('bot_username')
 BOT_URL_PATH = os.getenv('bot_url_path')
 BOT = telegram.Bot(BOT_TOKEN)
 UPDATER = Updater(BOT_TOKEN, use_context=True)
-DISPATCHER: Dispatcher = UPDATER.dispatcher
+DISPATCHER = UPDATER.dispatcher
+
 DISPATCHER.add_handler(CommandHandler('start', start_handler))
 DISPATCHER.add_handler(MessageHandler(filters=Filters.text, callback=non_command_handler))
 DISPATCHER.add_handler(CallbackQueryHandler(starting_choices_handler))
-index_debug_msg = 'not set up'
 
 
 # func to set up webhook
