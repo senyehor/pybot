@@ -1,13 +1,11 @@
 import logging
 import os
 import flask
-import requests
 from flask import Flask, request
 import telegram
-from boto.s3.connection import S3Connection  # for accessing app`s config vars locally
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, Dispatcher, CallbackContext
+from telegram.ext import Updater, CommandHandler, Dispatcher
 from pprint import pp
+from bot_handlers import start
 
 app = Flask(__name__)
 
@@ -25,12 +23,8 @@ BOT_URL_PATH = os.getenv('bot_url_path')
 BOT = telegram.Bot(BOT_TOKEN)
 UPDATER = Updater(BOT_TOKEN, use_context=True)
 DISPATCHER: Dispatcher = UPDATER.dispatcher
+DISPATCHER.add_handler(CommandHandler('start', start))
 index_debug_msg = 'not set up'
-
-
-def pog(update: Update, context: CallbackContext) -> None:
-    BOT.sendMessage(chat_id=update.message.chat_id, text='pog')
-    update.message.reply_text('pog')
 
 
 # func to set up webhook
@@ -46,7 +40,7 @@ def run_bot():
 @app.route(f'/{BOT_TOKEN}', methods=['POST', 'GET'])
 def hooks_getter():
     """Bot sends hooks every time he gets a message and this func processes them"""
-    UPDATER
+    pp(DISPATCHER.handlers)
     update = telegram.Update.de_json(request.get_json(force=True), BOT)
     text = update.message.text.encode('utf-8').decode()
     chat_id = update.message.chat_id
@@ -64,7 +58,6 @@ def process_command(command: str):
 
 @app.route('/')
 def index():
-    pp(DISPATCHER.handlers)
     return 'ok'
 
 
