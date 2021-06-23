@@ -1,5 +1,9 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
+from collections import namedtuple
+
+CHOICES = namedtuple('Choices', ['ADD', 'START', 'EDIT', 'DELETE'])
+CHOICES = CHOICES('ADD', 'START', 'EDIT', 'DELETE')
 
 
 def start_handler(update: Update, context: CallbackContext) -> None:
@@ -15,11 +19,11 @@ def non_command_handler(update: Update, context: CallbackContext) -> None:
 
 def create_starting_choices_inline_kbrd_for_user(username: str):
     keyboard = [
-        [
-            InlineKeyboardButton("Option 1", callback_data='1'),
-            InlineKeyboardButton("Option 2", callback_data='2'),
-        ],
-        [InlineKeyboardButton("Option 3", callback_data='3')],
+        [InlineKeyboardButton("Add new activity tracker", callback_data=CHOICES.ADD)],
+        [InlineKeyboardButton("Start activity", callback_data=CHOICES.START)],
+        # TODO : add user options
+        [InlineKeyboardButton("Edit activity", callback_data=CHOICES.EDIT)],
+        [InlineKeyboardButton("Delete activity", callback_data=CHOICES.DELETE)]
     ]
 
     keyboard = InlineKeyboardMarkup(keyboard)
