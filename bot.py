@@ -3,9 +3,9 @@ import os
 import flask
 from flask import Flask, request
 import telegram
-from telegram.ext import Updater, CommandHandler, Dispatcher
+from telegram.ext import Updater, CommandHandler, Dispatcher, MessageHandler, Filters
 from pprint import pp
-from bot_handlers import start
+from bot_handlers import start, non_command
 
 app = Flask(__name__)
 
@@ -24,6 +24,7 @@ BOT = telegram.Bot(BOT_TOKEN)
 UPDATER = Updater(BOT_TOKEN, use_context=True)
 DISPATCHER: Dispatcher = UPDATER.dispatcher
 DISPATCHER.add_handler(CommandHandler('start', start))
+DISPATCHER.add_handler(MessageHandler(filters=Filters.text, callback=non_command))
 index_debug_msg = 'not set up'
 
 
@@ -31,10 +32,7 @@ index_debug_msg = 'not set up'
 @app.before_first_request
 def run_bot():
     if SET_WEBHOOK:
-        UPDATER.start_webhook(listen='0.0.0.0',
-                              port=PORT,
-                              url_path=BOT_TOKEN,
-                              webhook_url=BOT_URL_PATH + BOT_TOKEN)
+        UPDATER.start_webhook()
 
 
 @app.route(f'/{BOT_TOKEN}', methods=['POST', 'GET'])
