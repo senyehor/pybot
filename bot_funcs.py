@@ -1,6 +1,9 @@
+from datetime import timedelta
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 from collections import namedtuple
+import asyncio
 
 CHOICES = namedtuple('Choices', ['ADD', 'START', 'EDIT', 'DELETE'])
 CHOICES = CHOICES('ADD', 'START', 'EDIT', 'DELETE')
@@ -34,3 +37,13 @@ def starting_choices_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
     query.edit_message_text(text=f'you selected {query.data}')
+
+
+async def set_timer_handler(update: Update, context: CallbackContext):
+    argument = int(context.args[0])
+    await async_timer()
+    update.message.reply_text('timer has')
+
+
+async def async_timer() -> None:
+    await asyncio.sleep(10)
