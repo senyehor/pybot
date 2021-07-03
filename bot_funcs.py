@@ -42,7 +42,7 @@ def starting_choices_handler(update: Update, context: CallbackContext) -> None:
 def set_timer_handler(update: Update, context: CallbackContext):
     logger = logging.getLogger()
     logger.debug('Entered set_timer')
-    time.sleep(6)
+    time.sleep(50)
     update.message.reply_text('10 sec has gone')
 
 
