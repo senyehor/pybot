@@ -24,8 +24,8 @@ UPDATER = Updater(BOT_TOKEN, use_context=True)
 DISPATCHER: Dispatcher = UPDATER.dispatcher
 
 DISPATCHER.add_handler(CommandHandler('start', start_handler))
-DISPATCHER.add_handler(CommandHandler('settimer', set_timer_handler, run_async=True))
-DISPATCHER.add_handler(MessageHandler(filters=Filters.text, callback=non_command_handler))
+DISPATCHER.add_handler(CommandHandler('settimer', set_timer_handler))
+DISPATCHER.add_handler(MessageHandler(filters=(Filters.text and ~Filters.command), callback=non_command_handler))
 DISPATCHER.add_handler(CallbackQueryHandler(starting_choices_handler))
 
 
@@ -37,7 +37,7 @@ def run_bot():
 
 @app.route(f'/{BOT_TOKEN}', methods=['POST', 'GET'])
 def hooks_getter():
-    """Bot sends hooks every time he gets a message and this func processes them"""
+    """Bot sends hooks every time he gets a message and this func passes them to dispatcher"""
     try:
         update = telegram.Update.de_json(request.get_json(force=True), BOT)
         DISPATCHER.process_update(update)

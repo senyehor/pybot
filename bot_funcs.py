@@ -1,12 +1,12 @@
-from datetime import timedelta
+import logging
+import time
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 from collections import namedtuple
 import asyncio
 
-CHOICES = namedtuple('Choices', ['ADD', 'START', 'EDIT', 'DELETE'])
-CHOICES = CHOICES('ADD', 'START', 'EDIT', 'DELETE')
+USER_ACTIONS_OPTIONS = namedtuple('Choices', ['ADD', 'START', 'EDIT', 'DELETE'])('ADD', 'START', 'EDIT', 'DELETE')
 
 
 def start_handler(update: Update, context: CallbackContext) -> None:
@@ -22,11 +22,11 @@ def non_command_handler(update: Update, context: CallbackContext) -> None:
 
 def create_starting_choices_inline_kbrd_for_user(username: str):
     keyboard = [
-        [InlineKeyboardButton("Add new activity tracker", callback_data=CHOICES.ADD)],
-        [InlineKeyboardButton("Start activity", callback_data=CHOICES.START)],
+        [InlineKeyboardButton("Add new activity tracker", callback_data=USER_ACTIONS_OPTIONS.ADD)],
+        [InlineKeyboardButton("Start activity", callback_data=USER_ACTIONS_OPTIONS.START)],
         # TODO : add user options
-        [InlineKeyboardButton("Edit activity", callback_data=CHOICES.EDIT)],
-        [InlineKeyboardButton("Delete activity", callback_data=CHOICES.DELETE)]
+        [InlineKeyboardButton("Edit activity", callback_data=USER_ACTIONS_OPTIONS.EDIT)],
+        [InlineKeyboardButton("Delete activity", callback_data=USER_ACTIONS_OPTIONS.DELETE)]
     ]
 
     keyboard = InlineKeyboardMarkup(keyboard)
@@ -39,10 +39,11 @@ def starting_choices_handler(update: Update, context: CallbackContext) -> None:
     query.edit_message_text(text=f'you selected {query.data}')
 
 
-async def set_timer_handler(update: Update, context: CallbackContext):
-    argument = int(context.args[0])
-    await async_timer()
-    update.message.reply_text('timer has')
+def set_timer_handler(update: Update, context: CallbackContext):
+    logger = logging.getLogger()
+    logger.debug('Entered set_timer')
+    time.sleep(6)
+    update.message.reply_text('10 sec has gone')
 
 
 async def async_timer() -> None:
