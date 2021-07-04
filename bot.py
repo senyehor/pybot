@@ -1,11 +1,10 @@
 import logging
-import os
-from datetime import date, timedelta
 
 import flask
-from flask import Flask, request
 import telegram
-from telegram.ext import Updater, CommandHandler, Dispatcher, MessageHandler, Filters, CallbackQueryHandler
+from flask import Flask, request
+from telegram.ext import Updater, Dispatcher, ConversationHandler, CommandHandler
+
 from bot_funcs import *
 
 app = Flask(__name__)
@@ -23,10 +22,10 @@ BOT = telegram.Bot(BOT_TOKEN)
 UPDATER = Updater(BOT_TOKEN, use_context=True)
 DISPATCHER: Dispatcher = UPDATER.dispatcher
 
-DISPATCHER.add_handler(CommandHandler('start', start_handler))
-DISPATCHER.add_handler(CommandHandler('settimer', set_timer_handler))
-DISPATCHER.add_handler(MessageHandler(filters=(Filters.text and ~Filters.command), callback=non_command_handler))
-DISPATCHER.add_handler(CallbackQueryHandler(starting_choices_handler))
+# conversation = ConversationHandler(
+#     entry_points=[CommandHandler('start', start_handler)]
+# )
+DISPATCHER.add_handler(CommandHandler('test', start_handler))
 
 
 # func to set up webhook
@@ -37,7 +36,7 @@ def run_bot():
 
 @app.route(f'/{BOT_TOKEN}', methods=['POST', 'GET'])
 def hooks_getter():
-    """Bot sends hooks every time he gets a message and this func passes them to dispatcher"""
+    """Bot sends hooks every time he gets a response and this func passes them to dispatcher"""
     try:
         update = telegram.Update.de_json(request.get_json(force=True), BOT)
         DISPATCHER.process_update(update)

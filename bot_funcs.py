@@ -1,50 +1,81 @@
-import logging
-import time
-
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CallbackContext
+import os
+from pprint import pp
 from collections import namedtuple
-import asyncio
+from typing import Union
+
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup  # noqa
+from telegram.ext import CallbackContext  # noqa
+
+from custom_google_classes import get_activities_manager, Activity, Spreadsheet
 
 USER_ACTIONS_OPTIONS = namedtuple('Choices', ['ADD', 'START', 'EDIT', 'DELETE'])('ADD', 'START', 'EDIT', 'DELETE')
 
 
 def start_handler(update: Update, context: CallbackContext) -> None:
-    print("------start")
-    welcome_message = """Hi, I`m developed to track your studying activity <3"""
-    update.message.reply_text(text=welcome_message, reply_markup=create_starting_choices_inline_kbrd_for_user('pass'))
-    # TODO : add inline kbrd
+    welcome_message = 'Hi, I`m developed to track your studying activity <3, lets get started and add an activity'
+    keyboard = [['1', '2', '3']]
+    update.message.reply_text(text=welcome_message,
+                              reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True))
+    print('---------------userdata-------------------')
+    pp(context.user_data)
 
 
 def non_command_handler(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Hmmm, I`m not really into chatting, im at work, you know')
+    update.message.reply_text('Hmm, I`m not really into chatting, im at work, you know')
 
 
-def create_starting_choices_inline_kbrd_for_user(username: str):
+def create_starting_choices_inline_keyboard(username: str) -> InlineKeyboardMarkup:
+    user_activities_keyboard = create_users_activities_keyboard_with_purpose(username)
     keyboard = [
-        [InlineKeyboardButton("Add new activity tracker", callback_data=USER_ACTIONS_OPTIONS.ADD)],
-        [InlineKeyboardButton("Start activity", callback_data=USER_ACTIONS_OPTIONS.START)],
-        # TODO : add user options
-        [InlineKeyboardButton("Edit activity", callback_data=USER_ACTIONS_OPTIONS.EDIT)],
-        [InlineKeyboardButton("Delete activity", callback_data=USER_ACTIONS_OPTIONS.DELETE)]
+        [InlineKeyboardButton("Add new activity tracker", callback_data=USER_ACTIONS_OPTIONS.ADD)]
     ]
-
+    if user_activities_keyboard:
+        keyboard.extend([[InlineKeyboardButton("Start activity", callback_data=USER_ACTIONS_OPTIONS.START)],
+                         [InlineKeyboardButton("Edit activity", callback_data=USER_ACTIONS_OPTIONS.EDIT)],
+                         [InlineKeyboardButton("Delete activity", callback_data=USER_ACTIONS_OPTIONS.DELETE)]])
     keyboard = InlineKeyboardMarkup(keyboard)
     return keyboard
 
 
-def starting_choices_handler(update: Update, context: CallbackContext) -> None:
+def create_users_activities_keyboard_with_purpose(username: str, purpose: str = '') \
+        -> Union[InlineKeyboardMarkup, None]:
+    keyboard = []
+    activities_names_list: list[str] = get_activities_manager(username).get_activities_names_list()
+    for activity_name in activities_names_list:
+        keyboard += [InlineKeyboardButton(activity_name.capitalize(), callback_data=activity_name + ';' + purpose)]
+    if keyboard:
+        return InlineKeyboardMarkup(keyboard)
+    return None
+
+
+def create_activity(update: Update):
+    username = update.effective_user.username
+    new_activity = Activity(Spreadsheet(os.getenv('workbook_id'), ))
+
+
+def main_manager(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
-    query.edit_message_text(text=f'you selected {query.data}')
+    username = update.effective_user.username
+    choice = query.data
+    if choice in USER_ACTIONS_OPTIONS._fields:
+        if choice == USER_ACTIONS_OPTIONS.ADD:
+            create_activity(update)
+            return
+        update.message.reply_text('Choose activity',
+                                  reply_markup=create_users_activities_keyboard_with_purpose(username, choice)
+                                  )
+    else:
+        activity_name, action = choice.split(';')
 
 
-def set_timer_handler(update: Update, context: CallbackContext):
-    logger = logging.getLogger()
-    logger.debug('Entered set_timer')
-    time.sleep(50)
-    update.message.reply_text('10 sec has gone')
+def start_activity(username: str, activity_name: str):
+    pass
 
 
-async def async_timer() -> None:
-    await asyncio.sleep(10)
+def edit_activity(username: str, activity_name: str):
+    pass
+
+
+def delete_activity(username: str, activity_name: str):
+    pass

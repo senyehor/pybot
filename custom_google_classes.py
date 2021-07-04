@@ -1,12 +1,14 @@
-from datetime import datetime, timedelta, date
-from collections import namedtuple
-from dotenv import load_dotenv
-from config import DEBUG
 import os
-import httplib2
-import googleapiclient.discovery as discovery
-from oauth2client.service_account import ServiceAccountCredentials
 from abc import ABC, abstractmethod
+from collections import namedtuple
+from datetime import datetime, timedelta
+
+import googleapiclient.discovery as discovery
+import httplib2
+from dotenv import load_dotenv
+from oauth2client.service_account import ServiceAccountCredentials
+
+from config import DEBUG
 
 if DEBUG:
     load_dotenv('.env')
@@ -377,7 +379,12 @@ class ActivitiesManager:
                f'you have been practising for ' \
                f'{days_practiced} days'
 
+    def get_activities_names_list(self):
+        values = self.__spreadsheet.get(f'{self.__user_sheet_name}!A1:A10', 'COLUMNS')
+        if not values:
+            return None
+        return values[0]
 
-spreadsheet = Spreadsheet(os.getenv('workbook_id'))
-pog = ActivitiesManager(spreadsheet, 'test_sheet')
-print(pog.get_current_statistic(pog.get_activity('python')))
+
+def get_activities_manager(user_sheet_name: str):
+    return ActivitiesManager(Spreadsheet(os.getenv('workbook_id')), user_sheet_name)
