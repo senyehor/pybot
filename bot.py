@@ -1,9 +1,10 @@
-import logging
+import os
 
 import flask
 import telegram
 from flask import Flask, request
-from telegram.ext import Updater, Dispatcher, ConversationHandler, CommandHandler
+from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters
+import coloredlogs
 
 from bot_funcs import *
 
@@ -13,6 +14,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG  # noqa
 )
 logger = logging.getLogger(__name__)
+coloredlogs.install(level='DEBUG')
 
 PORT = int(os.getenv('PORT'))
 BOT_TOKEN = os.getenv('bot_token')
@@ -22,10 +24,44 @@ BOT = telegram.Bot(BOT_TOKEN)
 UPDATER = Updater(BOT_TOKEN, use_context=True)
 DISPATCHER: Dispatcher = UPDATER.dispatcher
 
-# conversation = ConversationHandler(
-#     entry_points=[CommandHandler('start', start_handler)]
-# )
-DISPATCHER.add_handler(CommandHandler('test', start_handler))
+inappropriate_answer_handler = MessageHandler(Filters.all, inappropriate_answer_handler)
+# if renaming check search in comments and strings
+# and rename ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS in bot_funcs
+ADD_ACTIVITY_SUBCONVERSATION = ConversationHandler(
+    entry_points=[MessageHandler(Filters.text, get_activity_name_handler)],  # noqa
+    states={  # noqa
+        ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.TIMINGS: [
+            MessageHandler(Filters.regex(whole), get_activity_timings_handler)
+        ]
+    },
+    fallbacks=[inappropriate_answer_handler],  # noqa
+    map_to_parent={
+        ConversationHandler.END: USER_CHOOSING_OPTIONS.CHOOSING
+    }
+)
+
+tmp = MessageHandler(Filters.all, tmp)
+
+main_endless_conversation = ConversationHandler(
+    entry_points=[CommandHandler('start', start_handler)],
+    states={
+        USER_CHOOSING_OPTIONS.CHOOSING: [
+            MessageHandler(filters=Filters.text, callback=user_choice_handler),
+        ],
+        USER_CHOOSING_OPTIONS.ADD: [ADD_ACTIVITY_SUBCONVERSATION],
+        USER_CHOOSING_OPTIONS.START: [
+            tmp
+        ],
+        USER_CHOOSING_OPTIONS.EDIT: [
+            tmp
+        ],
+        USER_CHOOSING_OPTIONS.DELETE: [
+            tmp
+        ]
+    },
+    fallbacks=[inappropriate_answer_handler]  # noqa
+)
+DISPATCHER.add_handler(main_endless_conversation)
 
 
 # func to set up webhook
@@ -48,9 +84,3 @@ def hooks_getter():
 @app.route('/')
 def index():
     return 'not sleeping'
-
-
-@app.route('/test_timer')
-async def timer():
-    await async_timer()
-    return 'works'

@@ -7,6 +7,7 @@ import googleapiclient.discovery as discovery
 import httplib2
 from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
+from typing import Union
 
 from config import DEBUG
 
@@ -103,9 +104,6 @@ class Spreadsheet(CustomGoogleFunctions):
         ).execute()
         values = response.get('values', None)
         return values
-
-    def get_activity(self, user_sheet_name: str, activity_name: str):
-        return Activity(self, user_sheet_name, activity_name)
 
     def clear(self, cells_range: str):
         self.__sheets_service.values().clear(
@@ -222,11 +220,14 @@ class DoneActivityRecord(namedtuple('DoneActivityRecord', ['done_percent_of_plan
         return cls(str(done_percent_of_planned_time), str(datetime.utcnow().date()))
 
 
-class Activity:
+class Activity: # noqa
 
-    def __init__(self, spreadsheet: Spreadsheet, user_sheet_name: str, activity_name: str, timings: Timings = None,
-                 statistic: Statistic = None, existing_activity: bool = False):
-        self.__spreadsheet = spreadsheet
+    def __init__(self, user_sheet_name: str, activity_name: str, timings: Union[Timings, str] = None,
+                 existing_activity: bool = False, spreadsheet: Spreadsheet = None):
+        if not spreadsheet:
+            self.__spreadsheet = Activity.__get_default_spreadsheet()
+        else:
+            self.__spreadsheet = spreadsheet
         self.__user_sheet_name = user_sheet_name
         self.__activity_name = activity_name
         self.__line_number = self.__get_activity_line_number()
@@ -240,8 +241,7 @@ class Activity:
             self.__timings = self.__get_timings()
             self.__statistic = self.__get_statistic()
         else:
-            self.__timings = timings
-            self.__statistic = statistic
+            self.__timings = timings if isinstance(timings, Timings) else Timings.to_timings_converter(timings)
 
     @property
     def activity_name(self):
@@ -257,7 +257,13 @@ class Activity:
 
     @property
     def statistic(self):
-        return self.__statistic
+        if hasattr(self, '__statistic'):
+            return self.__statistic
+        raise Exception('Statistic is available only at already existing activity')
+
+    @staticmethod
+    def __get_default_spreadsheet():
+        return Spreadsheet(os.getenv('workbook_id'))
 
     def _get_activities_column_values(self):
         cells_for_activities_names = f'{self.user_sheet_name}!A1:A10'
@@ -269,7 +275,10 @@ class Activity:
 
     def __get_activity_line_number(self):
         column_values = self._get_activities_column_values()
-        activity_line_number = column_values.index(self.__activity_name) + 1
+        try:
+            activity_line_number = column_values.index(self.__activity_name) + 1
+        except AttributeError:
+            return 1
         return activity_line_number
 
     def _get_first_empty_row_number(self):
@@ -304,7 +313,7 @@ class Activity:
                 statistic_cell = statistic_cell.update_week_start_and_set_done_days_to_zero()
         self.__update_statistic_cell(statistic_cell)
 
-    def __clear_activity_cells(self):
+    def __clear_activity_records_cells(self):
         self.__spreadsheet.clear(self.__records_cells)
 
     def __get_first_free_cell_of_activity_row(self):
@@ -333,10 +342,19 @@ class Activity:
             raise Exception(f'At {self.user_sheet_name} "{self.__activity_name}" activity statistic cell is empty :(')
         return Statistic.to_statistic_converter(statistic[0][0])
 
+    def __init_statistic_cell(self):
+        current_date = datetime.utcnow().date()
+        statistic = Statistic(0, 0, current_date, current_date)
+        self.__spreadsheet.update(self.__statistic_cell, str(statistic))
+
     def _add_activity_record(self, record: DoneActivityRecord):
+        try:
+            statistic_cell = self.__get_statistic()
+        except:
+            self.__init_statistic_cell()
         first_free_cell = f'{self.user_sheet_name}!' + self.__get_first_free_cell_of_activity_row()
         if first_free_cell.startswith('AH'):
-            self.__clear_activity_cells()
+            self.__clear_activity_records_cells()
             first_free_cell = self.__get_first_free_cell_of_activity_row()
         self.__spreadsheet.update(first_free_cell, str(record))
         self.__update_activity_statistic(record)
@@ -360,7 +378,7 @@ class ActivitiesManager:
                                   [activity.activity_name, str(activity.timings), str(activity.statistic)])
 
     def get_activity(self, activity_name: str):
-        return Activity(self.__spreadsheet, self.__user_sheet_name, activity_name, existing_activity=True)
+        return Activity(self.__user_sheet_name, activity_name, existing_activity=True)
 
     @staticmethod
     def add_record(activity: Activity, record: DoneActivityRecord):
@@ -385,6 +403,6 @@ class ActivitiesManager:
             return None
         return values[0]
 
-
-def get_activities_manager(user_sheet_name: str):
-    return ActivitiesManager(Spreadsheet(os.getenv('workbook_id')), user_sheet_name)
+    @staticmethod
+    def get_activities_manager(user_sheet_name: str):
+        return ActivitiesManager(Spreadsheet(os.getenv('workbook_id')), user_sheet_name)
