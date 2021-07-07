@@ -35,13 +35,31 @@ whole = days_and_comma + fr'({time};)*' + time + '$'
 CONVERSATION_STATE = 'CONVERSATION_STATE'
 
 
+def log_output(func):
+    def wrap(*args, **kwargs):
+        result = func(*args, **kwargs)
+        logger.debug(f'{func.__name__} returned {result} ----------------------')
+        return result
+
+    return wrap
+
+
 def log(func: Callable):
     def wrap(*args, **kwargs):
         logger.debug(f'Entered {func.__name__}' + '-' * 60)
         result = func(*args, **kwargs)
         logger.debug(f'Exited {func.__name__}' + '-' * 60)
         return result
+
     return wrap
+
+@log_output
+def get_chat_id(context: CallbackContext):
+    return context.user_data['CHAT_ID']
+
+
+def set_chat_id(chat_id, context: CallbackContext):
+    context.user_data['CHAT_ID'] = chat_id
 
 
 @log
@@ -53,7 +71,8 @@ def tmp(update: Update, context: CallbackContext):
 @log
 def send_message_by_state(context: CallbackContext, state: str):
     """State should be an attribute of defined ..._OPTIONS namedtuple"""
-    context.bot.send_message(text=OPTIONS_MESSAGES[state], chat_id=context.user_data['CHAT_ID'])
+    print(get_chat_id(context))
+    context.bot.send_message(text=OPTIONS_MESSAGES[state], chat_id=get_chat_id(context))
 
 
 @log
@@ -108,15 +127,14 @@ def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPT
     context.bot.send_message(
         text='Hi, I`m developed to track your studying activity <3, lets get started and add an activity.',
         chat_id=update.message.chat_id)
-    context.user_data['CHAT_ID'] = update.message.chat_id
-    print(context.user_data['CHAT_ID'])
+    set_chat_id(update.message.chat_id, context)
     return set_next_conversation_state_send_message_by_state_and_return_state(context, USER_CHOOSING_OPTIONS.ADD)
 
 
 @log
 def inappropriate_answer_handler(update: Update, context: CallbackContext):
     state = context.user_data.get(CONVERSATION_STATE)
-    context.bot.send_message('Got an unexpected reply', chat_id=context.user_data['CHAT_ID'])
+    context.bot.send_message('Got an unexpected reply', get_chat_id(context))
     send_message_by_state(context, state)
     return state
 
