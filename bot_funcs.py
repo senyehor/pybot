@@ -35,10 +35,13 @@ whole = days_and_comma + fr'({time};)*' + time + '$'
 CONVERSATION_STATE = 'CONVERSATION_STATE'
 
 
-def log(func: Callable, *args):
-    logger.debug(f'Entered {func.__name__}' + '-' * 60)
-    func(args)
-    logger.debug(f'Exited {func.__name__}' + '-' * 60)
+def log(func: Callable):
+    def wrap(*args, **kwargs):
+        logger.debug(f'Entered {func.__name__}' + '-' * 60)
+        result = func(*args, **kwargs)
+        logger.debug(f'Exited {func.__name__}' + '-' * 60)
+        return result
+    return wrap
 
 
 @log
@@ -106,12 +109,12 @@ def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPT
         text='Hi, I`m developed to track your studying activity <3, lets get started and add an activity.',
         chat_id=update.message.chat_id)
     context.user_data['CHAT_ID'] = update.message.chat_id
+    print(context.user_data['CHAT_ID'])
     return set_next_conversation_state_send_message_by_state_and_return_state(context, USER_CHOOSING_OPTIONS.ADD)
 
 
 @log
 def inappropriate_answer_handler(update: Update, context: CallbackContext):
-    logger.debug('Entered inapprop' + '-' * 60)
     state = context.user_data.get(CONVERSATION_STATE)
     context.bot.send_message('Got an unexpected reply', chat_id=context.user_data['CHAT_ID'])
     send_message_by_state(context, state)
