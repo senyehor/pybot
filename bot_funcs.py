@@ -1,6 +1,5 @@
 import logging
 from collections import namedtuple
-from typing import Callable
 
 from telegram import Update, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton  # noqa
 from telegram.ext import CallbackContext, ConversationHandler  # noqa
@@ -44,7 +43,7 @@ def log_output(func):
     return wrap
 
 
-def log(func: Callable):
+def log(func):
     def wrap(*args, **kwargs):
         logger.debug(f'Entered {func.__name__}' + '-' * 60)
         result = func(*args, **kwargs)

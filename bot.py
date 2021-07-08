@@ -1,12 +1,23 @@
+import logging
 import os
 
+import coloredlogs
 import flask
 import telegram
 from flask import Flask, request
-from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters
-import coloredlogs
+from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, ConversationHandler
 
-from bot_funcs import *
+from bot_funcs import (
+    inappropriate_answer_handler,
+    ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS,
+    whole,
+    get_activity_name_handler,
+    get_activity_timings_handler,
+    USER_CHOOSING_OPTIONS,
+    tmp,
+    start_handler,
+    user_choice_handler,
+)
 
 app = Flask(__name__)
 
@@ -61,6 +72,7 @@ main_endless_conversation = ConversationHandler(
     },
     fallbacks=[inappropriate_answer_handler]  # noqa
 )
+print(f'{main_endless_conversation.states = }')
 DISPATCHER.add_handler(main_endless_conversation)
 
 
