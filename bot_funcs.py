@@ -54,7 +54,6 @@ def log(func: Callable):
     return wrap
 
 
-@log_output
 def get_chat_id(context: CallbackContext):
     return context.user_data['CHAT_ID']
 
@@ -72,7 +71,6 @@ def tmp(update: Update, context: CallbackContext):
 @log
 def send_message_by_state(context: CallbackContext, state: str):
     """State should be an attribute of defined ..._OPTIONS namedtuple"""
-    print(get_chat_id(context))
     context.bot.send_message(text=OPTIONS_MESSAGES[state], chat_id=get_chat_id(context))
 
 
@@ -100,8 +98,8 @@ def get_activity_timings_handler(update: Update, context: CallbackContext):
     timings_from_user = update.message.text.replace(' ', '').replace(',', '|')  # format properly to how its stored
     activity_name = context.user_data.get(ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME)
     # add_activity(update.effective_user.username, activity_name, timings_from_user)
-    context.bot.send_message(f'{timings_from_user = } {activity_name = }', chat_id=get_chat_id(context))
-    context.bot.send_message('Activity was successfully added', chat_id=get_chat_id(context))
+    context.bot.send_message(chat_id=get_chat_id(context), text=f'{timings_from_user = } {activity_name = }')
+    context.bot.send_message(chat_id=get_chat_id(context), text='Activity was successfully added')
     return ConversationHandler.END
 
 
@@ -134,7 +132,7 @@ def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPT
 @log
 def inappropriate_answer_handler(update: Update, context: CallbackContext):
     state = context.user_data.get(CONVERSATION_STATE)
-    context.bot.send_message('Got an unexpected reply', get_chat_id(context))
+    context.bot.send_message(chat_id=get_chat_id(context), text='Got an unexpected reply')
     send_message_by_state(context, state)
     return state
 
