@@ -59,7 +59,7 @@ main_endless_conversation = ConversationHandler(
         USER_CHOOSING_OPTIONS.CHOOSING: [
             MessageHandler(filters=Filters.text, callback=user_choice_handler),
         ],
-        USER_CHOOSING_OPTIONS.ADD: [ADD_ACTIVITY_SUBCONVERSATION],
+        USER_CHOOSING_OPTIONS.ADD: [tmp],
         USER_CHOOSING_OPTIONS.START: [
             tmp
         ],
@@ -70,9 +70,9 @@ main_endless_conversation = ConversationHandler(
             tmp
         ]
     },
-    fallbacks=[inappropriate_answer_handler]  # noqa
+    fallbacks=[inappropriate_answer_handler],  # noqa
+    allow_reentry=True
 )
-print(f'{main_endless_conversation.states = }')
 DISPATCHER.add_handler(main_endless_conversation)
 
 
