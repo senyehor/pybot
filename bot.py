@@ -1,7 +1,6 @@
 import logging
 import os
 
-import coloredlogs
 import flask
 import telegram
 from flask import Flask, request
@@ -22,10 +21,9 @@ from bot_funcs import (
 app = Flask(__name__)
 
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG  # noqa
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.ERROR  # noqa
 )
 logger = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG')
 
 PORT = int(os.getenv('PORT'))
 BOT_TOKEN = os.getenv('bot_token')
@@ -37,7 +35,7 @@ DISPATCHER: Dispatcher = UPDATER.dispatcher
 
 inappropriate_answer_handler = MessageHandler(Filters.all, inappropriate_answer_handler)
 # if renaming check search in comments and strings
-# and rename ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS in bot_funcs
+# and rename ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS in bot_funcs.py
 ADD_ACTIVITY_SUBCONVERSATION = ConversationHandler(
     entry_points=[MessageHandler(Filters.text, get_activity_name_handler)],  # noqa
     states={  # noqa

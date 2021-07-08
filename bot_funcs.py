@@ -48,41 +48,43 @@ def log(func):
     def wrap(*args, **kwargs):
         logger.debug(f'Entered {func.__name__}' + '-' * 60)
         result = func(*args, **kwargs)
-        logger.debug(f'Exited {func.__name__}' + '-' * 60)
+        logger.debug(f'Exited {func.__name__} and it RETURNED {result}' + '-' * 60)
         return result
 
     return wrap
 
 
-def get_chat_id(context: CallbackContext):
+def _get_chat_id(context: CallbackContext):
     return context.user_data['CHAT_ID']
 
 
-def set_chat_id(chat_id, context: CallbackContext):
+def _set_chat_id(chat_id, context: CallbackContext):
     context.user_data['CHAT_ID'] = chat_id
 
 
-@log
-def send_message_by_state(context: CallbackContext, state: str):
-    """State should be an attribute of defined ..._OPTIONS namedtuple"""
-    context.bot.send_message(text=OPTIONS_MESSAGES[state], chat_id=get_chat_id(context))
+def send_message(text: str, context: CallbackContext, reply_markup: ReplyKeyboardMarkup = None):
+    context.bot.send_message(text=text, chat_id=_get_chat_id(context), reply_markup=reply_markup)
 
 
 @log
-def set_next_conversation_state_send_message_by_state_and_return_state(context: CallbackContext, state: str) -> str:
+def send_message_by_state(state: str, context: CallbackContext):
     """State should be an attribute of defined ..._OPTIONS namedtuple"""
-    context.bot.send_message(text=f'from {context.user_data[CONVERSATION_STATE]} --> {state}',
-                             chat_id=get_chat_id(context))
+    send_message(OPTIONS_MESSAGES[state], context)
+
+
+@log
+def set_next_conversation_state_send_message_by_state_and_return_state(state: str, context: CallbackContext) -> str:
+    """State should be an attribute of defined ..._OPTIONS namedtuple"""
+    send_message(f'from {context.user_data[CONVERSATION_STATE]} --> {state}', context)
     context.user_data[CONVERSATION_STATE] = state
-    send_message_by_state(context, state)
+    send_message_by_state(state, context)
     return state
 
 
 @log
 def tmp(update: Update, context: CallbackContext):
-    context.bot.send_message(text=f'current state is {context.user_data[CONVERSATION_STATE]}',
-                             chat_id=get_chat_id(context))
-    return set_next_conversation_state_send_message_by_state_and_return_state(context, USER_CHOOSING_OPTIONS.CHOOSING)
+    send_message(f'current state is {context.user_data[CONVERSATION_STATE]}', context)
+    return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSING, context)
 
 
 @log
@@ -92,8 +94,7 @@ def get_activity_name_handler(update: Update, context: CallbackContext):
     context.user_data[CONVERSATION_STATE] = ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME
     context.user_data[ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME] = update.message.text
     return set_next_conversation_state_send_message_by_state_and_return_state(
-        context,
-        ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.TIMINGS)
+        ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.TIMINGS, context)
 
 
 @log
@@ -101,8 +102,8 @@ def get_activity_timings_handler(update: Update, context: CallbackContext):
     timings_from_user = update.message.text.replace(' ', '').replace(',', '|')  # format properly to how its stored
     activity_name = context.user_data.get(ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME)
     # add_activity(update.effective_user.username, activity_name, timings_from_user)
-    context.bot.send_message(chat_id=get_chat_id(context), text=f'{timings_from_user = } {activity_name = }')
-    context.bot.send_message(chat_id=get_chat_id(context), text='Activity was successfully added')
+    send_message(f'{timings_from_user = } {activity_name = }', context)
+    send_message('Activity was successfully added', context)
     return ConversationHandler.END
 
 
@@ -118,12 +119,12 @@ def add_activity(username: str, activity_name: str, timings: str):
 def user_choice_handler(update: Update, context: CallbackContext):
     try:
         user_choice = update.message.text.split(' ')[0].upper()
-        context.bot.send_message(chat_id=get_chat_id(context), text=f'got {user_choice}')
+        send_message(f'got {user_choice}', context)
     except:
         inappropriate_answer_handler(update, context)
     if user_choice not in USER_CHOOSING_OPTIONS._fields:
         inappropriate_answer_handler(update, context)
-    return set_next_conversation_state_send_message_by_state_and_return_state(context, user_choice)
+    return set_next_conversation_state_send_message_by_state_and_return_state(user_choice, context)
 
 
 # @log
@@ -143,15 +144,15 @@ def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPT
         text='Hi, I`m developed to track your studying activity <3, lets get started and add an activity.',
         chat_id=update.message.chat_id,
         reply_markup=create_starting_choices_inline_keyboard(''))
-    set_chat_id(update.message.chat_id, context)
-    return set_next_conversation_state_send_message_by_state_and_return_state(context, USER_CHOOSING_OPTIONS.CHOOSING)
+    _set_chat_id(update.message.chat_id, context)
+    return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSING, context)
 
 
 @log
 def inappropriate_answer_handler(update: Update, context: CallbackContext):
     state = context.user_data.get(CONVERSATION_STATE)
-    context.bot.send_message(chat_id=get_chat_id(context), text='Got an unexpected reply')
-    send_message_by_state(context, state)
+    send_message('Got an unexpected reply', context)
+    send_message_by_state(state, context)
     return state
 
 
