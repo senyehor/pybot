@@ -4,7 +4,7 @@ import os
 import flask
 import telegram
 from flask import Flask, request
-from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, ConversationHandler
+from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler
 
 from bot_funcs import (
     inappropriate_answer_handler,
@@ -21,7 +21,7 @@ from bot_funcs import (
 app = Flask(__name__)
 
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.ERROR  # noqa
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG  # noqa
 )
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ main_endless_conversation = ConversationHandler(
     entry_points=[CommandHandler('start', start_handler)],
     states={
         USER_CHOOSING_OPTIONS.CHOOSING: [
-            MessageHandler(filters=Filters.text, callback=user_choice_handler),
+            CallbackQueryHandler(user_choice_handler),
         ],
         USER_CHOOSING_OPTIONS.ADD: [tmp],
         USER_CHOOSING_OPTIONS.START: [

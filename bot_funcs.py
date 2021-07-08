@@ -117,13 +117,8 @@ def add_activity(username: str, activity_name: str, timings: str):
 
 @log
 def user_choice_handler(update: Update, context: CallbackContext):
-    try:
-        user_choice = update.message.text.split(' ')[0].upper()
-        send_message(f'got {user_choice}', context)
-    except:
-        inappropriate_answer_handler(update, context)
-    if user_choice not in USER_CHOOSING_OPTIONS._fields:
-        inappropriate_answer_handler(update, context)
+    update.callback_query.answer()
+    user_choice = update.callback_query.data
     return set_next_conversation_state_send_message_by_state_and_return_state(user_choice, context)
 
 
