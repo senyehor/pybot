@@ -53,6 +53,7 @@ def log(func: Callable):
 
     return wrap
 
+
 @log_output
 def get_chat_id(context: CallbackContext):
     return context.user_data['CHAT_ID']
@@ -86,7 +87,7 @@ def set_next_conversation_state_send_message_by_state_and_return_state(context: 
 @log
 def get_activity_name_handler(update: Update, context: CallbackContext):
     # todo add check if user already has activity with same name
-    # todo think of setting conv state one approachd
+    # todo think of setting conv state one approach
     context.user_data[CONVERSATION_STATE] = ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME
     context.user_data[ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME] = update.message.text
     return set_next_conversation_state_send_message_by_state_and_return_state(
@@ -96,12 +97,12 @@ def get_activity_name_handler(update: Update, context: CallbackContext):
 
 @log
 def get_activity_timings_handler(update: Update, context: CallbackContext):
-    timings_from_user = update.message.text.replace(' ', '')
-    timings_from_user = timings_from_user.replace(',', '|')
+    timings_from_user = update.message.text.replace(' ', '').replace(',', '|')  # format properly to how its stored
     activity_name = context.user_data.get(ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME)
-    add_activity(update.effective_user.username, activity_name, timings_from_user)
-    context.bot.send_message('Activity was successfully added')
-    return ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS
+    # add_activity(update.effective_user.username, activity_name, timings_from_user)
+    context.bot.send_message(f'{timings_from_user = } {activity_name = }', chat_id=get_chat_id(context))
+    context.bot.send_message('Activity was successfully added', chat_id=get_chat_id(context))
+    return ConversationHandler.END
 
 
 @log
@@ -123,7 +124,6 @@ def user_choice_handler(update: Update, context: CallbackContext):
 @log
 def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPTIONS.ADD:
     """First thing user will do is add an activity, so after /start user goes into ADD_ACTIVITY_SUBCONVERSATION"""
-    logger.debug('Entered start' + '-' * 60)
     context.bot.send_message(
         text='Hi, I`m developed to track your studying activity <3, lets get started and add an activity.',
         chat_id=update.message.chat_id)
