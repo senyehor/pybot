@@ -80,9 +80,13 @@ def set_next_conversation_state_send_message_by_state_and_return_state(state: st
 
 
 @log
-def tmp(update: Update, context: CallbackContext):
+def plug(update: Update, context: CallbackContext):
     send_message(f'tmp - current state is {context.user_data[CONVERSATION_STATE]}', context)
     return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSING, context)
+
+
+def pog(update: Update, context: CallbackContext):
+    send_message('did not catch', context)
 
 
 @log
@@ -115,9 +119,13 @@ def add_activity(username: str, activity_name: str, timings: str):
 
 @log
 def user_choice_handler(update: Update, context: CallbackContext):
-    user_choice = update.message.text.split(' ')[0].upper()
+    try:
+        user_choice = update.message.text.split(' ')[0].upper()
+    except:
+        return inappropriate_answer_handler(update, context)
+    send_message(user_choice, context)
     if user_choice not in USER_CHOOSING_OPTIONS._fields:
-        inappropriate_answer_handler(update, context)
+        return inappropriate_answer_handler(update, context)
     return set_next_conversation_state_send_message_by_state_and_return_state(user_choice, context)
 
 
@@ -137,7 +145,6 @@ def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPT
     """First thing user will do is add an activity, so after /start user goes into ADD_ACTIVITY_SUBCONVERSATION"""
     send_message('Hi, I`m developed to track your studying activity <3, lets get started and add an activity.', context,
                  create_starting_choices_inline_keyboard(''))
-
     return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSING, context)
 
 

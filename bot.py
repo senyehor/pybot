@@ -13,10 +13,11 @@ from bot_funcs import (
     get_activity_name_handler,
     get_activity_timings_handler,
     USER_CHOOSING_OPTIONS,
-    tmp,
+    plug,
     start_handler,
     user_choice_handler,
-    keyboard_iput_pattern
+    keyboard_iput_pattern,
+    pog
 )
 
 app = Flask(__name__)
@@ -50,25 +51,27 @@ ADD_ACTIVITY_SUBCONVERSATION = ConversationHandler(
     }
 )
 
-tmp = MessageHandler(Filters.all, tmp)
+
+plug = MessageHandler(Filters.all, plug)
 
 main_endless_conversation = ConversationHandler(
     entry_points=[CommandHandler('start', start_handler)],
     states={
         USER_CHOOSING_OPTIONS.CHOOSING: [
             MessageHandler(Filters.regex(keyboard_iput_pattern), user_choice_handler),
+            MessageHandler(Filters.all, pog)
         ],
         USER_CHOOSING_OPTIONS.ADD: [
-            tmp
+            plug
         ],
         USER_CHOOSING_OPTIONS.START: [
-            tmp
+            plug
         ],
         USER_CHOOSING_OPTIONS.EDIT: [
-            tmp
+            plug
         ],
         USER_CHOOSING_OPTIONS.DELETE: [
-            tmp
+            plug
         ]
     },
     fallbacks=[inappropriate_answer_handler],  # noqa
