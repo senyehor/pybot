@@ -30,7 +30,14 @@ OPTIONS_MESSAGES = {
 }
 days_and_comma = r'\s*\d\s*,'
 time = r'\s*((\d:\d\d)|(\d\d)|(\d))'
-whole = days_and_comma + fr'({time};)*' + time + '$'
+WHOLE = days_and_comma + fr'({time};)*' + time + '$'
+start_words = ''
+for word in USER_CHOOSING_OPTIONS._fields:
+    word = word.capitalize()
+    start_words += f'({word})'
+    if word != USER_CHOOSING_OPTIONS._fields[-1]:
+        start_words += '|'
+keyboard_iput_pattern = f'^({start_words})'
 
 CONVERSATION_STATE = 'CONVERSATION_STATE'
 
@@ -74,7 +81,7 @@ def set_next_conversation_state_send_message_by_state_and_return_state(state: st
 
 @log
 def tmp(update: Update, context: CallbackContext):
-    send_message(f'current state is {context.user_data[CONVERSATION_STATE]}', context)
+    send_message(f'tmp - current state is {context.user_data[CONVERSATION_STATE]}', context)
     return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSING, context)
 
 
@@ -108,9 +115,9 @@ def add_activity(username: str, activity_name: str, timings: str):
 
 @log
 def user_choice_handler(update: Update, context: CallbackContext):
-    update.callback_query.answer()
-    user_choice = update.callback_query.data
-    send_message(user_choice, context)
+    user_choice = update.message.text.split(' ')[0].upper()
+    if user_choice not in USER_CHOOSING_OPTIONS._fields:
+        inappropriate_answer_handler(update, context)
     return set_next_conversation_state_send_message_by_state_and_return_state(user_choice, context)
 
 
@@ -125,20 +132,19 @@ def user_choice_handler(update: Update, context: CallbackContext):
 
 @log
 def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPTIONS.ADD:
+    _set_chat_id(update.message.chat_id, context)
     context.user_data[CONVERSATION_STATE] = 'START'  # todo delete after debug
     """First thing user will do is add an activity, so after /start user goes into ADD_ACTIVITY_SUBCONVERSATION"""
-    context.bot.send_message(
-        text='Hi, I`m developed to track your studying activity <3, lets get started and add an activity.',
-        chat_id=update.message.chat_id,
-        reply_markup=create_starting_choices_inline_keyboard(''))
-    _set_chat_id(update.message.chat_id, context)
+    send_message('Hi, I`m developed to track your studying activity <3, lets get started and add an activity.', context,
+                 create_starting_choices_inline_keyboard(''))
+
     return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSING, context)
 
 
 @log
 def inappropriate_answer_handler(update: Update, context: CallbackContext):
     state = context.user_data.get(CONVERSATION_STATE)
-    send_message('Got an unexpected reply', context)
+    send_message(f'Got an unexpected reply with state {context.user_data[CONVERSATION_STATE]}', context)
     send_message_by_state(state, context)
     return state
 
@@ -149,10 +155,10 @@ def cancel_handler(update: Update, context: CallbackContext):
 
 def create_starting_choices_inline_keyboard(username: str) -> ReplyKeyboardMarkup:
     keyboard = [
-        [KeyboardButton("Add new activity tracker", callback_data=USER_CHOOSING_OPTIONS.ADD)],
-        [KeyboardButton("Start activity", callback_data=USER_CHOOSING_OPTIONS.START)],
-        [KeyboardButton("Edit activity", callback_data=USER_CHOOSING_OPTIONS.EDIT)],
-        [KeyboardButton("Delete activity", callback_data=USER_CHOOSING_OPTIONS.DELETE)]
+        [KeyboardButton("Add new activity tracker")],
+        [KeyboardButton("Start activity")],
+        [KeyboardButton("Edit activity")],
+        [KeyboardButton("Delete activity")]
     ]
     keyboard = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
     return keyboard
