@@ -35,9 +35,9 @@ start_words = ''
 for word in USER_CHOOSING_OPTIONS._fields:
     word = word.capitalize()
     start_words += f'({word})'
-    if word != USER_CHOOSING_OPTIONS._fields[-1]:
+    if word != USER_CHOOSING_OPTIONS._fields[-1].capitalize():
         start_words += '|'
-keyboard_iput_pattern = f'^({start_words})'
+keyboard_input_pattern = f'^({start_words})'
 
 CONVERSATION_STATE = 'CONVERSATION_STATE'
 
@@ -143,7 +143,8 @@ def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPT
     _set_chat_id(update.message.chat_id, context)
     context.user_data[CONVERSATION_STATE] = 'START'  # todo delete after debug
     """First thing user will do is add an activity, so after /start user goes into ADD_ACTIVITY_SUBCONVERSATION"""
-    send_message('Hi, I`m developed to track your studying activity <3, lets get started and add an activity.', context,
+    send_message('Hi, I`m developed to track your studying activity <3, lets get started and add an activity.',
+                 context,
                  create_starting_choices_inline_keyboard(''))
     return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSING, context)
 

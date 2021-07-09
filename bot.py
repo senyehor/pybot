@@ -16,7 +16,7 @@ from bot_funcs import (
     plug,
     start_handler,
     user_choice_handler,
-    keyboard_iput_pattern,
+    keyboard_input_pattern,
     pog
 )
 
@@ -58,7 +58,7 @@ main_endless_conversation = ConversationHandler(
     entry_points=[CommandHandler('start', start_handler)],
     states={
         USER_CHOOSING_OPTIONS.CHOOSING: [
-            MessageHandler(Filters.regex(keyboard_iput_pattern), user_choice_handler),
+            MessageHandler(Filters.regex(keyboard_input_pattern), user_choice_handler),
             MessageHandler(Filters.all, pog)
         ],
         USER_CHOOSING_OPTIONS.ADD: [
@@ -76,7 +76,6 @@ main_endless_conversation = ConversationHandler(
     },
     fallbacks=[inappropriate_answer_handler],  # noqa
     allow_reentry=True,
-
 )
 DISPATCHER.add_handler(main_endless_conversation)
 
