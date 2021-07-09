@@ -47,7 +47,7 @@ ADD_ACTIVITY_SUBCONVERSATION = ConversationHandler(
     },
     fallbacks=[inappropriate_answer_handler],  # noqa
     map_to_parent={
-        ConversationHandler.END: USER_CHOOSING_OPTIONS.CHOOSING
+        ConversationHandler.END: USER_CHOOSING_OPTIONS.CHOOSE
     }
 )
 
@@ -57,7 +57,7 @@ plug = MessageHandler(Filters.all, plug)
 main_endless_conversation = ConversationHandler(
     entry_points=[CommandHandler('start', start_handler)],
     states={
-        USER_CHOOSING_OPTIONS.CHOOSING: [
+        USER_CHOOSING_OPTIONS.CHOOSE: [
             MessageHandler(Filters.regex(keyboard_input_pattern), user_choice_handler),
             MessageHandler(Filters.all, pog)
         ],

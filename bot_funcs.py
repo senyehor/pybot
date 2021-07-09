@@ -10,14 +10,14 @@ logger = logging.getLogger(__name__)
 
 USER_CHOOSING_OPTIONS = namedtuple(
     'Choices',
-    ['CHOOSING', 'ADD', 'EDIT', 'DELETE', 'START', 'CANCEL']) \
-    ('CHOOSING', 'ADD', 'EDIT', 'DELETE', 'START', 'CANCEL')
+    ['CHOOSE', 'ADD', 'EDIT', 'DELETE', 'START', 'CANCEL']) \
+    ('CHOOSE', 'ADD', 'EDIT', 'DELETE', 'START', 'CANCEL')
 ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS = namedtuple(
     'Activity_attributes',
     ['NAME', 'TIMINGS']) \
     ('NAME', 'TIMINGS')
 OPTIONS_MESSAGES = {
-    USER_CHOOSING_OPTIONS.CHOOSING: 'Choose what to do',
+    USER_CHOOSING_OPTIONS.CHOOSE: 'Choose what to do',
     USER_CHOOSING_OPTIONS.ADD: 'Enter name of activity',
     USER_CHOOSING_OPTIONS.EDIT: 'What activity you want to edit?',
     USER_CHOOSING_OPTIONS.DELETE: 'Choose activity to delete',
@@ -82,7 +82,7 @@ def set_next_conversation_state_send_message_by_state_and_return_state(state: st
 @log
 def plug(update: Update, context: CallbackContext):
     send_message(f'tmp - current state is {context.user_data[CONVERSATION_STATE]}', context)
-    return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSING, context)
+    return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSE, context)
 
 
 def pog(update: Update, context: CallbackContext):
@@ -146,7 +146,7 @@ def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPT
     send_message('Hi, I`m developed to track your studying activity <3, lets get started and add an activity.',
                  context,
                  create_starting_choices_inline_keyboard(''))
-    return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSING, context)
+    return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSE, context)
 
 
 @log
