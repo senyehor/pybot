@@ -69,7 +69,8 @@ main_endless_conversation = ConversationHandler(
         ]
     },
     fallbacks=[inappropriate_answer_handler],  # noqa
-    allow_reentry=True
+    allow_reentry=True,
+
 )
 DISPATCHER.add_handler(main_endless_conversation)
 

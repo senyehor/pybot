@@ -35,15 +35,6 @@ whole = days_and_comma + fr'({time};)*' + time + '$'
 CONVERSATION_STATE = 'CONVERSATION_STATE'
 
 
-def log_output(func):
-    def wrap(*args, **kwargs):
-        result = func(*args, **kwargs)
-        logger.debug(f'{func.__name__} returned {result} ----------------------')
-        return result
-
-    return wrap
-
-
 def log(func):
     def wrap(*args, **kwargs):
         logger.debug(f'Entered {func.__name__}' + '-' * 60)
@@ -119,6 +110,7 @@ def add_activity(username: str, activity_name: str, timings: str):
 def user_choice_handler(update: Update, context: CallbackContext):
     update.callback_query.answer()
     user_choice = update.callback_query.data
+    send_message(user_choice, context)
     return set_next_conversation_state_send_message_by_state_and_return_state(user_choice, context)
 
 
