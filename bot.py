@@ -17,7 +17,7 @@ from bot_funcs import (
     start_handler,
     user_choice_handler,
     keyboard_input_pattern,
-    pog
+    did_not_catch_regex
 )
 
 app = Flask(__name__)
@@ -53,13 +53,13 @@ ADD_ACTIVITY_SUBCONVERSATION = ConversationHandler(
 
 
 plug = MessageHandler(Filters.all, plug)
-
+print('conv was set' + '-'*25)
 main_endless_conversation = ConversationHandler(
     entry_points=[CommandHandler('start', start_handler)],
     states={
         USER_CHOOSING_OPTIONS.CHOOSE: [
             MessageHandler(Filters.regex(keyboard_input_pattern), user_choice_handler),
-            MessageHandler(Filters.all, pog)
+            MessageHandler(Filters.all, did_not_catch_regex)
         ],
         USER_CHOOSING_OPTIONS.ADD: [
             plug
@@ -76,6 +76,7 @@ main_endless_conversation = ConversationHandler(
     },
     fallbacks=[inappropriate_answer_handler],  # noqa
     allow_reentry=True,
+    name='main_endless_conversation'
 )
 DISPATCHER.add_handler(main_endless_conversation)
 

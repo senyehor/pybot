@@ -47,6 +47,8 @@ def log(func):
         logger.debug(f'Entered {func.__name__}' + '-' * 60)
         result = func(*args, **kwargs)
         logger.debug(f'Exited {func.__name__} and it RETURNED {result}' + '-' * 60)
+        _, context = args
+        logger.debug(f'state is {context.user_data[CONVERSATION_STATE]}' + '-' * 60)
         return result
 
     return wrap
@@ -85,36 +87,8 @@ def plug(update: Update, context: CallbackContext):
     return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSE, context)
 
 
-def pog(update: Update, context: CallbackContext):
+def did_not_catch_regex(update: Update, context: CallbackContext):
     send_message('did not catch', context)
-
-
-@log
-def get_activity_name_handler(update: Update, context: CallbackContext):
-    # todo add check if user already has activity with same name
-    # todo think of setting conv state one approach
-    context.user_data[CONVERSATION_STATE] = ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME
-    context.user_data[ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME] = update.message.text
-    return set_next_conversation_state_send_message_by_state_and_return_state(
-        ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.TIMINGS, context)
-
-
-@log
-def get_activity_timings_handler(update: Update, context: CallbackContext):
-    timings_from_user = update.message.text.replace(' ', '').replace(',', '|')  # format properly to how its stored
-    activity_name = context.user_data.get(ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME)
-    # add_activity(update.effective_user.username, activity_name, timings_from_user)
-    send_message(f'{timings_from_user = } {activity_name = }', context)
-    send_message('Activity was successfully added', context)
-    return ConversationHandler.END
-
-
-@log
-def add_activity(username: str, activity_name: str, timings: str):
-    manager = ActivitiesManager.get_activities_manager(username)
-    activity = Activity(username, activity_name, timings)
-    manager.add_activity(activity)
-    return ConversationHandler.END
 
 
 @log
@@ -159,6 +133,33 @@ def inappropriate_answer_handler(update: Update, context: CallbackContext):
 
 def cancel_handler(update: Update, context: CallbackContext):
     return USER_CHOOSING_OPTIONS.CANCEL
+
+
+@log
+def get_activity_name_handler(update: Update, context: CallbackContext):
+    # todo add check if user already has activity with same name
+    # todo think of setting conv state one approach
+    context.user_data[CONVERSATION_STATE] = ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME
+    context.user_data[ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME] = update.message.text
+    return set_next_conversation_state_send_message_by_state_and_return_state(
+        ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.TIMINGS, context)
+
+
+@log
+def get_activity_timings_handler(update: Update, context: CallbackContext):
+    timings_from_user = update.message.text.replace(' ', '').replace(',', '|')  # format properly to how its stored
+    activity_name = context.user_data.get(ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME)
+    # add_activity(update.effective_user.username, activity_name, timings_from_user)
+    send_message(f'{timings_from_user = } {activity_name = }', context)
+    send_message('Activity was successfully added', context)
+    return ConversationHandler.END
+
+
+def add_activity(username: str, activity_name: str, timings: str):
+    manager = ActivitiesManager.get_activities_manager(username)
+    activity = Activity(username, activity_name, timings)
+    manager.add_activity(activity)
+    return ConversationHandler.END
 
 
 def create_starting_choices_inline_keyboard(username: str) -> ReplyKeyboardMarkup:
