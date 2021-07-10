@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext, ConversationHandler  # noqa
 
 from custom_google_classes import Activity, ActivitiesManager
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 USER_CHOOSING_OPTIONS = namedtuple(
     'Choices',
@@ -42,13 +42,28 @@ keyboard_input_pattern = f'^({start_words})'
 CONVERSATION_STATE = 'CONVERSATION_STATE'
 
 
+def send_message(text: str, context: CallbackContext, reply_markup: ReplyKeyboardMarkup = None):
+    context.bot.send_message(text=text, chat_id=_get_chat_id(context), reply_markup=reply_markup)
+
+
+def _get_state(context: CallbackContext):
+    return context.user_data[CONVERSATION_STATE]
+
+
+def _set_state(state: str, context: CallbackContext):
+    send_message(f'_set from {_get_state(context)} to {state}', context)
+    context.user_data[CONVERSATION_STATE] = state
+
+
 def log(func):
     def wrap(*args, **kwargs):
-        logger.debug(f'Entered {func.__name__}' + '-' * 60)
-        result = func(*args, **kwargs)
-        logger.debug(f'Exited {func.__name__} and it RETURNED {result}' + '-' * 60)
         _, context = args
-        logger.debug(f'state is {context.user_data[CONVERSATION_STATE]}' + '-' * 60)
+        if func.__name__ == 'start_handler':  # todo del
+            context.user_data[CONVERSATION_STATE] = 'START'
+        state_at_start = _get_state(context)
+        result = func(*args, **kwargs)
+        state_at_end = _get_state(context)
+        logger.debug(f'\n@log func {func.__name__} from {state_at_start} --> {state_at_end}\n')
         return result
 
     return wrap
@@ -62,10 +77,6 @@ def _set_chat_id(chat_id, context: CallbackContext):
     context.user_data['CHAT_ID'] = chat_id
 
 
-def send_message(text: str, context: CallbackContext, reply_markup: ReplyKeyboardMarkup = None):
-    context.bot.send_message(text=text, chat_id=_get_chat_id(context), reply_markup=reply_markup)
-
-
 @log
 def send_message_by_state(state: str, context: CallbackContext):
     """State should be an attribute of defined ..._OPTIONS namedtuple"""
@@ -75,15 +86,15 @@ def send_message_by_state(state: str, context: CallbackContext):
 @log
 def set_next_conversation_state_send_message_by_state_and_return_state(state: str, context: CallbackContext) -> str:
     """State should be an attribute of defined ..._OPTIONS namedtuple"""
-    send_message(f'from {context.user_data[CONVERSATION_STATE]} --> {state}', context)
-    context.user_data[CONVERSATION_STATE] = state
+    send_message(f'from {_get_state(context)} --> {state}', context)
+    _set_state(state, context)
     send_message_by_state(state, context)
     return state
 
 
 @log
 def plug(update: Update, context: CallbackContext):
-    send_message(f'tmp - current state is {context.user_data[CONVERSATION_STATE]}', context)
+    send_message(f'tmp - current state is {_get_state(context)}', context)
     return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSE, context)
 
 
@@ -95,11 +106,16 @@ def did_not_catch_regex(update: Update, context: CallbackContext):
 def user_choice_handler(update: Update, context: CallbackContext):
     try:
         user_choice = update.message.text.split(' ')[0].upper()
+        send_message(user_choice, context)
     except:
+        send_message('Exept happend', context)
         return inappropriate_answer_handler(update, context)
-    send_message(user_choice, context)
-    if user_choice not in USER_CHOOSING_OPTIONS._fields:
+    result = user_choice not in USER_CHOOSING_OPTIONS._fields
+    if result:
+        send_message(f'{user_choice} not in fields', context)
         return inappropriate_answer_handler(update, context)
+    send_message(f'state {user_choice} in fields', context)
+    send_message(f'went to set_... with state {user_choice}', context)
     return set_next_conversation_state_send_message_by_state_and_return_state(user_choice, context)
 
 
@@ -114,9 +130,8 @@ def user_choice_handler(update: Update, context: CallbackContext):
 
 @log
 def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPTIONS.ADD:
-    _set_chat_id(update.message.chat_id, context)
-    context.user_data[CONVERSATION_STATE] = 'START'  # todo delete after debug
     """First thing user will do is add an activity, so after /start user goes into ADD_ACTIVITY_SUBCONVERSATION"""
+    _set_chat_id(update.message.chat_id, context)
     send_message('Hi, I`m developed to track your studying activity <3, lets get started and add an activity.',
                  context,
                  create_starting_choices_inline_keyboard(''))
@@ -125,10 +140,9 @@ def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPT
 
 @log
 def inappropriate_answer_handler(update: Update, context: CallbackContext):
-    state = context.user_data.get(CONVERSATION_STATE)
-    send_message(f'Got an unexpected reply with state {context.user_data[CONVERSATION_STATE]}', context)
-    send_message_by_state(state, context)
-    return state
+    state = _get_state(context)
+    send_message(f'Got an unexpected reply with state {state}', context)
+    return set_next_conversation_state_send_message_by_state_and_return_state(state, context)
 
 
 def cancel_handler(update: Update, context: CallbackContext):
@@ -139,7 +153,7 @@ def cancel_handler(update: Update, context: CallbackContext):
 def get_activity_name_handler(update: Update, context: CallbackContext):
     # todo add check if user already has activity with same name
     # todo think of setting conv state one approach
-    context.user_data[CONVERSATION_STATE] = ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME
+    _set_state(ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME, context)
     context.user_data[ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.NAME] = update.message.text
     return set_next_conversation_state_send_message_by_state_and_return_state(
         ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS.TIMINGS, context)

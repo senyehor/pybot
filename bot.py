@@ -2,7 +2,6 @@ import logging
 
 from telegram.ext import CommandHandler, MessageHandler, Filters, ConversationHandler
 
-from app import DISPATCHER
 from bot_funcs import (
     inappropriate_answer_handler,
     ACTIVITY_ATTRIBUTES_OR_ADD_ACTIVITY_SUBCONVERSATION_OPTIONS,
@@ -45,7 +44,6 @@ main_endless_conversation = ConversationHandler(
     states={
         USER_CHOOSING_OPTIONS.CHOOSE: [
             MessageHandler(Filters.regex(keyboard_input_pattern), user_choice_handler),
-            MessageHandler(Filters.all, did_not_catch_regex)
         ],
         USER_CHOOSING_OPTIONS.ADD: [
             plug
@@ -62,6 +60,4 @@ main_endless_conversation = ConversationHandler(
     },
     fallbacks=[inappropriate_answer_handler],  # noqa
     allow_reentry=True,
-    name='main_endless_conversation'
 )
-DISPATCHER.add_handler(main_endless_conversation)
