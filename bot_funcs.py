@@ -6,7 +6,11 @@ from telegram.ext import CallbackContext, ConversationHandler  # noqa
 
 from custom_google_classes import Activity, ActivitiesManager
 
-logger = logging.getLogger()
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.DEBUG
+)
+
+logger = logging.getLogger(__name__)
 
 USER_CHOOSING_OPTIONS = namedtuple(
     'Choices',
