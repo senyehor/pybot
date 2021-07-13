@@ -6,7 +6,7 @@ import telegram
 from flask import Flask, request, Response
 from telegram.ext import Dispatcher
 
-from bot import main_endless_conversation
+from bot import conv_handler
 
 app = Flask(__name__)
 
@@ -20,7 +20,7 @@ BOT = telegram.Bot(BOT_TOKEN)
 def setup():
     update_queue = Queue()
     dispatcher = Dispatcher(BOT, update_queue)
-    dispatcher.add_handler(main_endless_conversation)
+    dispatcher.add_handler(conv_handler)
     thread = Thread(target=dispatcher.start, name='dispatcher')
     thread.start()
     return update_queue
