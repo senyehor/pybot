@@ -3,7 +3,7 @@ import os
 
 import telegram
 from flask import Flask, request, Response
-from telegram.ext import Dispatcher
+from telegram.ext import Dispatcher, Updater
 
 from bot import main_endless_conversation
 
@@ -46,3 +46,13 @@ def webhooks_getter():
 @app.route('/')
 def index():
     return 'not sleeping'
+
+
+def set_webhook():
+    updater = Updater(BOT_TOKEN)
+    updater.start_webhook(
+        listen='0.0.0.0',
+        port=PORT,
+        url_path=BOT_TOKEN,
+        webhook_url=BOT_URL_PATH + BOT_URL_PATH
+    )
