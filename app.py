@@ -1,6 +1,5 @@
+import logging
 import os
-from queue import Queue
-from threading import Thread
 
 import telegram
 from flask import Flask, request, Response
@@ -16,17 +15,20 @@ BOT_USERNAME = os.getenv('bot_username')
 BOT_URL_PATH = os.getenv('bot_url_path')
 BOT = telegram.Bot(BOT_TOKEN)
 
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.DEBUG
+)
+logger = logging.getLogger(__name__)
 
-def setup():
-    update_queue = Queue()
-    dispatcher = Dispatcher(BOT, update_queue)
+
+def setup_and_return_dispatcher():
+    dispatcher = Dispatcher(BOT, None, workers=0)  # noqa
     dispatcher.add_handler(main_endless_conversation)
-    thread = Thread(target=dispatcher.start, name='dispatcher')
-    thread.start()
-    return update_queue
+    return dispatcher
 
 
-UPDATE_QUEUE = setup()
+DISPATCHER = setup_and_return_dispatcher()
+logger.debug(f'DISPATCHER with id {id(DISPATCHER)} was created')
 
 
 @app.route(f'/{BOT_TOKEN}', methods=['POST', 'GET'])
@@ -34,7 +36,8 @@ def webhooks_getter():
     """Bot sends hooks every time he gets a message and this func passes them to dispatcher"""
     try:
         update = telegram.Update.de_json(request.get_json(force=True), BOT)
-        UPDATE_QUEUE.put(update)
+        DISPATCHER.process_update(update)
+        logger.debug(f'dispatcher with id {id(DISPATCHER)} processed update')
     except:  # noqa
         return Response(status=500)
     return Response(status=200)

@@ -15,10 +15,6 @@ from bot_funcs import (
     keyboard_input_pattern
 )
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.DEBUG
-)
-
 logger = logging.getLogger(__name__)
 
 inappropriate_answer_handler = MessageHandler(Filters.all, inappropriate_answer_handler)
