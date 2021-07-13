@@ -90,7 +90,7 @@ def send_message_by_state(state: str, context: CallbackContext):
 @log
 def set_next_conversation_state_send_message_by_state_and_return_state(state: str, context: CallbackContext) -> str:
     """State should be an attribute of defined ..._OPTIONS namedtuple"""
-    send_message(f'from {_get_state(context)} --> {state}', context)
+    logger.debug(f'@log from {_get_state(context)} --> {state}')
     _set_state(state, context)
     send_message_by_state(state, context)
     return state
@@ -98,7 +98,7 @@ def set_next_conversation_state_send_message_by_state_and_return_state(state: st
 
 @log
 def plug(update: Update, context: CallbackContext):
-    send_message(f'tmp - current state is {_get_state(context)}', context)
+    logger.debug(f'@log tmp - current state is {_get_state(context)}')
     return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSE, context)
 
 
@@ -112,25 +112,16 @@ def user_choice_handler(update: Update, context: CallbackContext):
         user_choice = update.message.text.split(' ')[0].upper()
         send_message(user_choice, context)
     except:
-        send_message('Exept happend', context)
+        logger.debug('Exept happend')
         return inappropriate_answer_handler(update, context)
     result = user_choice not in USER_CHOOSING_OPTIONS._fields
     if result:
-        send_message(f'{user_choice} not in fields', context)
+        logger.debug(f'{user_choice} not in fields')
         return inappropriate_answer_handler(update, context)
-    send_message(f'state {user_choice} in fields', context)
-    send_message(f'went to set_... with state {user_choice}', context)
+    logger.debug(f'state {user_choice} in fields')
+    logger.debug(f'went to set_... with state {user_choice}')
     return set_next_conversation_state_send_message_by_state_and_return_state(user_choice, context)
 
-
-# @log
-# def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPTIONS.ADD:
-#     """First thing user will do is add an activity, so after /start user goes into ADD_ACTIVITY_SUBCONVERSATION"""
-#     context.bot.send_message(
-#         text='Hi, I`m developed to track your studying activity <3, lets get started and add an activity.',
-#         chat_id=update.message.chat_id)
-#     set_chat_id(update.message.chat_id, context)
-#     return set_next_conversation_state_send_message_by_state_and_return_state(context, USER_CHOOSING_OPTIONS.ADD)
 
 @log
 def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPTIONS.ADD:
@@ -140,6 +131,17 @@ def start_handler(update: Update, context: CallbackContext) -> USER_CHOOSING_OPT
                  context,
                  create_starting_choices_inline_keyboard(''))
     return set_next_conversation_state_send_message_by_state_and_return_state(USER_CHOOSING_OPTIONS.CHOOSE, context)
+
+
+def create_starting_choices_inline_keyboard(username: str) -> ReplyKeyboardMarkup:
+    keyboard = [
+        [KeyboardButton("Add new activity tracker")],
+        [KeyboardButton("Start activity")],
+        [KeyboardButton("Edit activity")],
+        [KeyboardButton("Delete activity")]
+    ]
+    keyboard = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
+    return keyboard
 
 
 @log
@@ -178,17 +180,6 @@ def add_activity(username: str, activity_name: str, timings: str):
     activity = Activity(username, activity_name, timings)
     manager.add_activity(activity)
     return ConversationHandler.END
-
-
-def create_starting_choices_inline_keyboard(username: str) -> ReplyKeyboardMarkup:
-    keyboard = [
-        [KeyboardButton("Add new activity tracker")],
-        [KeyboardButton("Start activity")],
-        [KeyboardButton("Edit activity")],
-        [KeyboardButton("Delete activity")]
-    ]
-    keyboard = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
-    return keyboard
 
 
 def start_activity(username: str, activity_name: str):
